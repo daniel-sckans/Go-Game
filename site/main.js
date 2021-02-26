@@ -1,7 +1,7 @@
 let c;
 let ctx;
 
-const ws = new WebSocket("ws://localhost:3000/ws")
+const ws = new WebSocket("ws://race-game-go.herokuapp.com/ws")
 let version = '0.1.1'
 
 class Box {
