@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -12,6 +14,7 @@ import (
 var upgrader = websocket.Upgrader{}
 
 func main() {
+	port := os.Getenv("PORT")
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
 	currentBoxes := NewBoxes{
@@ -28,7 +31,7 @@ func main() {
 
 	http.Handle("/", http.FileServer(http.Dir("./site")))
 
-	fmt.Println("Running")
+	log.Print("Running on: " + port)
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		var conn, _ = upgrader.Upgrade(w, r, nil)
@@ -84,7 +87,7 @@ func main() {
 		}(conn)
 	})
 
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":"+port, nil)
 }
 
 type NewBoxes struct {
