@@ -1,34 +1,3 @@
-Skip to content
-Search or jump to…
-
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@SeJoMaCode 
-SeJoMaCode
-/
-Go-Game
-1
-00
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-Settings
-Go-Game/main.go /
-@SeJoMaCode
-SeJoMaCode deployment maybe
-Latest commit 19b50db 37 minutes ago
- History
- 1 contributor
-107 lines (91 sloc)  2.4 KB
-  
 package main
 
 import (
@@ -136,15 +105,3 @@ type NewBoxes struct {
 type SingleMessage struct {
 	Message string `json:"message"`
 }
-© 2021 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Docs
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
