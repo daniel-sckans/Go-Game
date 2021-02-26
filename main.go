@@ -1,3 +1,34 @@
+Skip to content
+Search or jump to…
+
+Pull requests
+Issues
+Marketplace
+Explore
+ 
+@SeJoMaCode 
+SeJoMaCode
+/
+Go-Game
+1
+00
+Code
+Issues
+Pull requests
+Actions
+Projects
+Wiki
+Security
+Insights
+Settings
+Go-Game/main.go /
+@SeJoMaCode
+SeJoMaCode deployment maybe
+Latest commit 19b50db 37 minutes ago
+ History
+ 1 contributor
+107 lines (91 sloc)  2.4 KB
+  
 package main
 
 import (
@@ -36,54 +67,52 @@ func main() {
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		var conn, _ = upgrader.Upgrade(w, r, nil)
 		go func(conn *websocket.Conn) {
-			_, msg, err := conn.ReadMessage()
-
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-
-			if string(msg) == "loaded" {
-				fmt.Println("User Connected")
-				conn.WriteJSON(currentBoxes)
-			}
-			if string(msg) == "green" {
-				println("New Boxes")
-				err := conn.WriteJSON(SingleMessage{
-					Message: "+1",
-				})
-
-				if err != nil {
-					fmt.Println(err)
-					return
-				}
-
-				currentBoxes = NewBoxes{
-					X1: fmt.Sprintf("%f", r1.Float64()*.3),
-					Y1: fmt.Sprintf("%f", r1.Float64()*.8),
-					W1: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
-					H1: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
-					C:  fmt.Sprintf("%f", r1.Float64()),
-					X2: fmt.Sprintf("%f", r1.Float64()*(.8-.5)+.5),
-					Y2: fmt.Sprintf("%f", r1.Float64()*.8),
-					W2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
-					H2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
-				}
-			} else if string(msg) == "red" {
-				err := conn.WriteJSON(SingleMessage{
-					Message: "-5",
-				})
-
-				if err != nil {
-					fmt.Println(err)
-					return
-				}
-			}
-		}(conn)
-		go func(conn *websocket.Conn) {
 			ch := time.Tick(time.Millisecond)
 
 			for range ch {
+				_, msg, err := conn.ReadMessage()
+
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+
+				if string(msg) == "loaded" {
+					fmt.Println("User Connected")
+					conn.WriteJSON(currentBoxes)
+				}
+				if string(msg) == "green" {
+					println("New Boxes")
+					err := conn.WriteJSON(SingleMessage{
+						Message: "+1",
+					})
+
+					if err != nil {
+						fmt.Println(err)
+						return
+					}
+
+					currentBoxes = NewBoxes{
+						X1: fmt.Sprintf("%f", r1.Float64()*.3),
+						Y1: fmt.Sprintf("%f", r1.Float64()*.8),
+						W1: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
+						H1: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
+						C:  fmt.Sprintf("%f", r1.Float64()),
+						X2: fmt.Sprintf("%f", r1.Float64()*(.8-.5)+.5),
+						Y2: fmt.Sprintf("%f", r1.Float64()*.8),
+						W2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
+						H2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
+					}
+				} else if string(msg) == "red" {
+					err := conn.WriteJSON(SingleMessage{
+						Message: "-5",
+					})
+
+					if err != nil {
+						fmt.Println(err)
+						return
+					}
+				}
 				conn.WriteJSON(currentBoxes)
 			}
 		}(conn)
@@ -107,3 +136,15 @@ type NewBoxes struct {
 type SingleMessage struct {
 	Message string `json:"message"`
 }
+© 2021 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Docs
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
