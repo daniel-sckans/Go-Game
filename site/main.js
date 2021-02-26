@@ -2,7 +2,7 @@ let c;
 let ctx;
 
 const ws = new WebSocket("ws://localhost:3000/ws")
-let version = '0.1.0'
+let version = '0.1.1'
 
 class Box {
     constructor(x, y, w, h) {
@@ -93,7 +93,6 @@ function init(){
 function gameLoop(timeStamp){
     window.onresize = resize()
     draw()
-    console.log(score)
     window.requestAnimationFrame(gameLoop)
 }
 
