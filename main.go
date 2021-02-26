@@ -36,52 +36,54 @@ func main() {
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		var conn, _ = upgrader.Upgrade(w, r, nil)
 		go func(conn *websocket.Conn) {
-			ch := time.Tick(time.Millisecond)
+			_, msg, err := conn.ReadMessage()
 
-			for range ch {
-				_, msg, err := conn.ReadMessage()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			if string(msg) == "loaded" {
+				fmt.Println("User Connected")
+				conn.WriteJSON(currentBoxes)
+			}
+			if string(msg) == "green" {
+				println("New Boxes")
+				err := conn.WriteJSON(SingleMessage{
+					Message: "+1",
+				})
 
 				if err != nil {
 					fmt.Println(err)
 					return
 				}
 
-				if string(msg) == "loaded" {
-					fmt.Println("User Connected")
-					conn.WriteJSON(currentBoxes)
+				currentBoxes = NewBoxes{
+					X1: fmt.Sprintf("%f", r1.Float64()*.3),
+					Y1: fmt.Sprintf("%f", r1.Float64()*.8),
+					W1: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
+					H1: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
+					C:  fmt.Sprintf("%f", r1.Float64()),
+					X2: fmt.Sprintf("%f", r1.Float64()*(.8-.5)+.5),
+					Y2: fmt.Sprintf("%f", r1.Float64()*.8),
+					W2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
+					H2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
 				}
-				if string(msg) == "green" {
-					println("New Boxes")
-					err := conn.WriteJSON(SingleMessage{
-						Message: "+1",
-					})
+			} else if string(msg) == "red" {
+				err := conn.WriteJSON(SingleMessage{
+					Message: "-5",
+				})
 
-					if err != nil {
-						fmt.Println(err)
-						return
-					}
-
-					currentBoxes = NewBoxes{
-						X1: fmt.Sprintf("%f", r1.Float64()*.3),
-						Y1: fmt.Sprintf("%f", r1.Float64()*.8),
-						W1: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
-						H1: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
-						C:  fmt.Sprintf("%f", r1.Float64()),
-						X2: fmt.Sprintf("%f", r1.Float64()*(.8-.5)+.5),
-						Y2: fmt.Sprintf("%f", r1.Float64()*.8),
-						W2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
-						H2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
-					}
-				} else if string(msg) == "red" {
-					err := conn.WriteJSON(SingleMessage{
-						Message: "-5",
-					})
-
-					if err != nil {
-						fmt.Println(err)
-						return
-					}
+				if err != nil {
+					fmt.Println(err)
+					return
 				}
+			}
+		}(conn)
+		go func(conn *websocket.Conn) {
+			ch := time.Tick(time.Millisecond)
+
+			for range ch {
 				conn.WriteJSON(currentBoxes)
 			}
 		}(conn)
