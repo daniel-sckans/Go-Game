@@ -27,10 +27,6 @@ class Box {
 
 window.onload = init
 
-ws.onopen = () => {console.log("Websocket Opened")}
-ws.onclose = () => {console.log("Websocket Closed")}
-ws.onerror = (error) => {console.log("Websocket Error: ", error)}
-
 let box1 = new Box(0,0,0,0)
 let box2 = new Box(0,0,0,0)
 let color
@@ -70,7 +66,11 @@ function init(){
     ctx = c.getContext('2d')
     resize()
 
-    ws.send('loaded')
+    
+    ws.onopen = () => {console.log("Websocket Opened");ws.send('loaded')}
+    ws.onclose = () => {console.log("Websocket Closed")}
+    ws.onerror = (error) => {console.log("Websocket Error: ", error)}
+    
     ws.onmessage = (msg) => {
         message_data = JSON.parse(msg.data)
         box1.x = message_data.x1 * c.width
