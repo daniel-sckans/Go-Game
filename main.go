@@ -36,9 +36,7 @@ func main() {
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		var conn, _ = upgrader.Upgrade(w, r, nil)
 		go func(conn *websocket.Conn) {
-			ch := time.Tick(time.Millisecond)
-
-			for range ch {
+			for {
 				_, msg, err := conn.ReadMessage()
 
 				if err != nil {
@@ -52,15 +50,9 @@ func main() {
 				}
 				if string(msg) == "green" {
 					println("New Boxes")
-					err := conn.WriteJSON(SingleMessage{
+					conn.WriteJSON(SingleMessage{
 						Message: "+1",
 					})
-
-					if err != nil {
-						fmt.Println(err)
-						return
-					}
-
 					currentBoxes = NewBoxes{
 						X1: fmt.Sprintf("%f", r1.Float64()*.3),
 						Y1: fmt.Sprintf("%f", r1.Float64()*.8),
@@ -73,15 +65,16 @@ func main() {
 						H2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
 					}
 				} else if string(msg) == "red" {
-					err := conn.WriteJSON(SingleMessage{
+					conn.WriteJSON(SingleMessage{
 						Message: "-5",
 					})
-
-					if err != nil {
-						fmt.Println(err)
-						return
-					}
 				}
+			}
+		}(conn)
+		go func(conn *websocket.Conn) {
+			ch := time.Tick(time.Millisecond)
+
+			for range ch {
 				conn.WriteJSON(currentBoxes)
 			}
 		}(conn)
