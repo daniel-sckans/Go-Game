@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -33,6 +34,7 @@ func main() {
 
 	log.Print("Running on: " + port)
 
+	mtx := &sync.Mutex{}
 	connections := []*websocket.Conn{}
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		var conn, _ = upgrader.Upgrade(w, r, nil)
@@ -66,6 +68,7 @@ func main() {
 				// conn.WriteJSON(SingleMessage{
 				// 	Message: "+1",
 				// })
+				mtx.Lock()
 				currentBoxes = NewBoxes{
 					X1: fmt.Sprintf("%f", r1.Float64()*.3),
 					Y1: fmt.Sprintf("%f", r1.Float64()*.8),
@@ -77,6 +80,7 @@ func main() {
 					W2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
 					H2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
 				}
+				mtx.Unlock()
 			} else if string(msg) == "red" {
 				// conn.WriteJSON(SingleMessage{
 				// 	Message: "-5",
@@ -88,7 +92,6 @@ func main() {
 	go func() {
 		ch := time.Tick(time.Millisecond)
 
-		// HAVE AN ARRAY OF WEBSOCKET CONNECTIONS
 		for range ch {
 			for _, conn := range connections {
 				conn.WriteJSON(currentBoxes)
