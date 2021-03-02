@@ -33,52 +33,68 @@ func main() {
 
 	log.Print("Running on: " + port)
 
+	connections := []*websocket.Conn{}
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		var conn, _ = upgrader.Upgrade(w, r, nil)
-		go func(conn *websocket.Conn) {
-			for {
-				_, msg, err := conn.ReadMessage()
+		connections = append(connections, conn)
+		defer func() {
+			for i, c := range connections {
+				if c == conn {
+					connections = append(connections[:i], connections[i:]...)
 
-				if err != nil {
-					fmt.Println(err)
-					return
-				}
-
-				if string(msg) == "loaded" {
-					fmt.Println("User Connected")
-					conn.WriteJSON(currentBoxes)
-				}
-				if string(msg) == "green" {
-					println("New Boxes")
-					conn.WriteJSON(SingleMessage{
-						Message: "+1",
-					})
-					currentBoxes = NewBoxes{
-						X1: fmt.Sprintf("%f", r1.Float64()*.3),
-						Y1: fmt.Sprintf("%f", r1.Float64()*.8),
-						W1: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
-						H1: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
-						C:  fmt.Sprintf("%f", r1.Float64()),
-						X2: fmt.Sprintf("%f", r1.Float64()*(.8-.5)+.5),
-						Y2: fmt.Sprintf("%f", r1.Float64()*.8),
-						W2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
-						H2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
-					}
-				} else if string(msg) == "red" {
-					conn.WriteJSON(SingleMessage{
-						Message: "-5",
-					})
+					// OR REPLACE THE DEAD CONNECTION WITH THE LAST ON THE LIST
+					// connections[i] = connections[len(connections)-1]
+					// connections = connections[:len(connections)-1]
 				}
 			}
-		}(conn)
-		go func(conn *websocket.Conn) {
-			ch := time.Tick(time.Millisecond)
+		}()
 
-			for range ch {
+		for {
+			_, msg, err := conn.ReadMessage()
+
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			if string(msg) == "loaded" {
+				fmt.Println("User Connected")
 				conn.WriteJSON(currentBoxes)
 			}
-		}(conn)
+			if string(msg) == "green" {
+				println("New Boxes")
+				// conn.WriteJSON(SingleMessage{
+				// 	Message: "+1",
+				// })
+				currentBoxes = NewBoxes{
+					X1: fmt.Sprintf("%f", r1.Float64()*.3),
+					Y1: fmt.Sprintf("%f", r1.Float64()*.8),
+					W1: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
+					H1: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
+					C:  fmt.Sprintf("%f", r1.Float64()),
+					X2: fmt.Sprintf("%f", r1.Float64()*(.8-.5)+.5),
+					Y2: fmt.Sprintf("%f", r1.Float64()*.8),
+					W2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
+					H2: fmt.Sprintf("%f", r1.Float64()*(.2-.1)+.1),
+				}
+			} else if string(msg) == "red" {
+				// conn.WriteJSON(SingleMessage{
+				// 	Message: "-5",
+				// })
+			}
+		}
 	})
+
+	go func() {
+		ch := time.Tick(time.Millisecond)
+
+		// HAVE AN ARRAY OF WEBSOCKET CONNECTIONS
+		for range ch {
+			for _, conn := range connections {
+				conn.WriteJSON(currentBoxes)
+			}
+		}
+	}()
 
 	http.ListenAndServe(":"+port, nil)
 }
